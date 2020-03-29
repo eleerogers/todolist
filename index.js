@@ -21,7 +21,6 @@ app.get('/api/passwords', (req, res) => {
   // Return them as json
   res.json(passwords);
 
-  console.log(`Sent ${count} passwords`);
 });
 
 // The "catchall" handler: for any request that doesn't
