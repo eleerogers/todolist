@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 // import 'bulma/css/bulma.css';
 import './App.css';
@@ -17,6 +17,7 @@ function App() {
   const {isShowing, toggle} = useModal();
   const [currList, setCurrList] = useState({value: "Home", label: "Home"});
   // const [list, ListDropdown] = useDropdown("Lists", listNames, currList, setCurrList)
+  const inputRef = useRef(null);
   
   useEffect(() => {
     async function getDay() {
@@ -52,6 +53,7 @@ function App() {
 
   function handleListChange(selectedOption) {
     setCurrList(selectedOption);
+    inputRef.current.focus();
   }
   
   
@@ -78,6 +80,7 @@ function App() {
             onChange={handleChange}
             autoComplete="off"
             data-list={currList.value}
+            ref={inputRef}
           />
           <button>
             +
@@ -99,6 +102,7 @@ function App() {
         hide={toggle}
         setListNames={setListNames}
         setCurrList={setCurrList}
+        inputRef={inputRef}
       />
     </div>
   );

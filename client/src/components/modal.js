@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import useForm from "../hooks/useForm";
 
-function Modal({ isShowing, hide, setListNames, setCurrList }) {
+function Modal({ isShowing, hide, setListNames, setCurrList, inputRef }) {
   const { values, handleChange, handleSubmit } = useForm(addList);
 
   function addList() {
@@ -10,6 +10,7 @@ function Modal({ isShowing, hide, setListNames, setCurrList }) {
     setListNames(currNames => [...currNames, newList]);
     setCurrList(newList);
     hide();
+    inputRef.current.focus();
   }
 
   return isShowing && ReactDOM.createPortal(
