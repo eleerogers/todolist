@@ -4,7 +4,7 @@ import axios from 'axios';
 import './App.css';
 import Modal from "./components/modal";
 import useForm from "./hooks/useForm";
-import useDropdown from "./hooks/useDropdown";
+// import useDropdown from "./hooks/useDropdown";
 import useModal from "./hooks/useModal";
 import Select from "react-select";
 
@@ -30,8 +30,18 @@ function App() {
     getDay();
   }, [day]);
 
+  useEffect(() => {
+    async function clearItems() {
+      try {
+        await axios('/api/todo');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    clearItems();
+  }, []);
+
   async function addTodo() {
-    console.log(values);
     try {
       const {data} = await axios.post('/api/todo', values)
       setTodos(data);
@@ -75,7 +85,12 @@ function App() {
         </form>
       </div>
       <div className="box">
-        <Select value={currList} options={listNames} onChange={handleListChange}/>
+        <Select 
+          value={currList} 
+          options={listNames} 
+          onChange={handleListChange} 
+          isSearchable={false}
+        />
         {/* <ListDropdown /> */}
         <button onClick={toggle}>Add list</button>
       </div>

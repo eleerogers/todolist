@@ -4,22 +4,29 @@ const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 const generatePassword = require('password-generator');
+const { getDate, getDay } = require('./getDate');
 
 const app = express();
-
+app.use(bodyParser.json());
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'client/build')));
 
+let items = [];
+
 app.get('/api/day', (req, res) => {
-  const today = new Date();
-  const currentDay = today.getDay();
-  let day = "";
-  if (currentDay === 0 || currentDay === 6) {
-    day = "the weekend";
-  } else {
-    day = "a weekday";
-  }
-  res.json(day);
+  const currentDay = getDate();
+  res.send(currentDay);
+})
+
+app.post('/api/todo', (req, res) => {
+  const {todo, list} = req.body;
+  items.push({todo, list});
+  res.send(items);
+})
+
+app.get('/api/todo', (req, res) => {
+  items = [];
+  res.sendStatus(200);
 })
 
 // Put all API endpoints under '/api'
