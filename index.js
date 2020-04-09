@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 const generatePassword = require('password-generator');
 const { getDate, getDay } = require('./getDate');
 
@@ -11,7 +12,28 @@ app.use(bodyParser.json());
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'client/build')));
 
-let items = [];
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+
+const todoSchema = new mongoose.Schema({
+  todo: String,
+  completed: String,
+  list: String
+}) 
+
+const Todo = mongoose.model("Todo", todoSchema);
+
+
+// const defaultItems = [groceries, washFish, annoyBoo]; 
+
+// Todo.insertMany(defaultItems, (err) => {
+//   if (err) {
+//     console.error(err);
+//   } else {
+//     console.log("successfully inserted default items")
+//   }
+// });
+
+// let items = [];
 
 app.get('/api/day', (req, res) => {
   const currentDay = getDate();
@@ -19,14 +41,38 @@ app.get('/api/day', (req, res) => {
 })
 
 app.post('/api/todo', (req, res) => {
-  const {todo, list} = req.body;
-  items.push({todo, list});
-  res.send(items);
+  const {todo, list, completed} = req.body;
+  const newTodo = new Todo({ todo, list, completed })
+  newTodo.save((err, todo) => {
+    if (err) {
+      console.error(err);
+    } else {
+      console.log(`succesfully added ${todo.todo}`);
+    }
+    res.redirect('/api/todo');
+  })
+})
+
+app.put('/api/todo', (req, res) => {
+  console.log("req.body put", req.body);
+})
+
+app.post('/api/deleteTodo', (req, res) => {
+  const { _id } = req.body;
+  Todo.deleteOne({ _id }, (err) => {
+    if (err) {
+      console.error(err);
+    } else {
+      console.log("successfully deleted item")
+    }
+    res.redirect('/api/todo')
+  })
 })
 
 app.get('/api/todo', (req, res) => {
-  items = [];
-  res.sendStatus(200);
+  Todo.find({}, (err, results) => {
+    res.send(results)
+  })
 })
 
 // Put all API endpoints under '/api'

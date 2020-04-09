@@ -7,10 +7,17 @@ import useForm from "./hooks/useForm";
 // import useDropdown from "./hooks/useDropdown";
 import useModal from "./hooks/useModal";
 import Select from "react-select";
+// import { FontAwesomeIcon } from 'react-fontawesome'
+// import { faCoffee } from 'free-solid-svg-icons'
+import Todo from './components/todo';
 
 function App() {
   const [day, setDay] = useState("");
-  const { values, handleChange, handleSubmit } = useForm(addTodo);
+  const { 
+    values: newTodoValues,
+    handleChange: newTodoHandleChange,
+    handleSubmit: newTodoHandleSubmit
+  } = useForm(addTodo);
   const [todos, setTodos] = useState([]);
   const listOptions = [{value: "Home", label: "Home"}, {value: "Work", label: "Work"}]
   const [listNames, setListNames] = useState(listOptions);
@@ -32,19 +39,31 @@ function App() {
   }, [day]);
 
   useEffect(() => {
-    async function clearItems() {
+    async function getItems() {
       try {
-        await axios('/api/todo');
+        const {data} = await axios('/api/todo');
+        setTodos(data);
       } catch (err) {
         console.error(err);
       }
     }
-    clearItems();
+    getItems();
   }, []);
 
   async function addTodo() {
     try {
-      const {data} = await axios.post('/api/todo', values)
+      const {data} = await axios.post('/api/todo', newTodoValues)
+      console.log(data);
+      setTodos(data);
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
+  async function deleteTodo(todo) {
+    try {
+      const {data} = await axios.post('/api/deleteTodo', todo)
+      console.log(data);
       setTodos(data);
     } catch(err) {
       console.error(err);
@@ -56,7 +75,6 @@ function App() {
     inputRef.current.focus();
   }
   
-  
   return (
     <div className="App">
       <div className="box" id="heading">
@@ -65,24 +83,26 @@ function App() {
       </div>
       <div className="box">
         {todos.map((todo, i) => {
-          return todo.list === currList.value && (
-          <div key={`${todo.todo}+${i}`} className="item">
-            <input type="checkbox" />
-            <p>{todo.todo}</p>
-          </div>)
+          return <Todo 
+            key={`${todo.todo}+${i}`} 
+            todo={todo} 
+            currList={currList} 
+            setTodos={setTodos}
+            deleteTodo={deleteTodo} 
+          />
         })}
-        <form className="item" onSubmit={handleSubmit}>
+        <form className="item" onSubmit={newTodoHandleSubmit}>
           <input
             type="text"
             placeholder='Add new "to do"'
             name="todo"
-            value={values.todo || ""}
-            onChange={handleChange}
+            value={newTodoValues.todo || ""}
+            onChange={newTodoHandleChange}
             autoComplete="off"
             data-list={currList.value}
             ref={inputRef}
           />
-          <button>
+          <button type="submit">
             +
           </button>
         </form>
