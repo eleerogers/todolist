@@ -16,7 +16,8 @@ function App() {
   const { 
     values: newTodoValues,
     handleChange: newTodoHandleChange,
-    handleSubmit: newTodoHandleSubmit
+    handleSubmit: newTodoHandleSubmit,
+    reset
   } = useForm(addTodo);
   const [todos, setTodos] = useState([]);
   const listOptions = [{value: "Home", label: "Home"}, {value: "Work", label: "Work"}]
@@ -43,18 +44,33 @@ function App() {
       try {
         const {data} = await axios('/api/todo');
         setTodos(data);
+        addListNames(data);
       } catch (err) {
         console.error(err);
       }
     }
+    function addListNames(data) {
+      const listNameVals = listNames.map(list => list.value)
+      data.forEach(item => {
+        if (listNameVals.indexOf(item.list) === -1) {
+          setListNames([...listNames, {value: item.list, label: item.list}]);
+        }
+      })
+    }
     getItems();
-  }, []);
+  }, [listNames]);
 
-  async function addTodo() {
+  async function addTodo(event) {
     try {
-      const {data} = await axios.post('/api/todo', newTodoValues)
+      const allValues = {
+        ...newTodoValues,
+        list: event.target.dataset.list,
+        completed: false
+      }
+      const {data} = await axios.post('/api/todo', allValues)
       console.log(data);
       setTodos(data);
+      reset();
     } catch(err) {
       console.error(err);
     }
@@ -74,6 +90,22 @@ function App() {
     setCurrList(selectedOption);
     inputRef.current.focus();
   }
+
+  async function handleCheckbox(event) {
+    try {
+      const { todo_id, todo_todo, todo_list, todo_completed } = event.target.dataset;
+      const allValues = {
+        _id: todo_id,
+        todo: todo_todo,
+        list: todo_list,
+        completed: todo_completed === 'true' ? false : true
+      }
+      const {data} = await axios.put('/api/todo', allValues)
+      setTodos(data);
+    } catch(err) {
+      console.error(err);
+    }
+  }
   
   return (
     <div className="App">
@@ -88,10 +120,11 @@ function App() {
             todo={todo} 
             currList={currList} 
             setTodos={setTodos}
-            deleteTodo={deleteTodo} 
+            deleteTodo={deleteTodo}
+            handleCheckbox={handleCheckbox}
           />
         })}
-        <form className="item" onSubmit={newTodoHandleSubmit}>
+        <form className="item" onSubmit={newTodoHandleSubmit} data-list={currList.value}>
           <input
             type="text"
             placeholder='Add new "to do"'

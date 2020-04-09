@@ -16,7 +16,7 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
 
 const todoSchema = new mongoose.Schema({
   todo: String,
-  completed: String,
+  completed: Boolean,
   list: String
 }) 
 
@@ -54,7 +54,15 @@ app.post('/api/todo', (req, res) => {
 })
 
 app.put('/api/todo', (req, res) => {
-  console.log("req.body put", req.body);
+  const { _id, completed } = req.body;
+  Todo.updateOne({ _id }, { completed }, (err) => {
+    if (err) {
+      console.error(err);
+    } else {
+      console.log('updated completed')
+    }
+    res.redirect(303, '/api/todo');
+  })
 })
 
 app.post('/api/deleteTodo', (req, res) => {

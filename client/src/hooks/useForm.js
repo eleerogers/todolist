@@ -6,8 +6,7 @@ const useForm = (callback) => {
 
   const handleSubmit = (event) => {
     if (event) event.preventDefault();
-      callback();
-      setValues({});
+      callback(event);
   };
 
   const handleChange = (event) => {
@@ -15,14 +14,18 @@ const useForm = (callback) => {
     setValues(values => ({
       ...values,
       [event.target.name]: event.target.value,
-      list: event.target.dataset.list
     }));
   };
+
+  const reset = () => {
+    setValues({});
+  }
 
   return {
     handleChange,
     handleSubmit,
     values,
+    reset
   }
 };
 

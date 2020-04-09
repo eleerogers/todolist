@@ -1,27 +1,10 @@
 import React from "react";
-import useForm from "../hooks/useForm";
 import useHover from "../hooks/useHover";
-import axios from 'axios';
 import { FaRegTrashAlt } from 'react-icons/fa';
 
-function Todo({todo, currList, setTodos, deleteTodo}) {
+function Todo({todo, currList, deleteTodo, handleCheckbox}) {
   const [hover, ref] = useHover();
-  const { 
-    values: todoValues,
-    handleChange: todoHandleChange,
-    handleSubmit: todoHandleSubmit
-  } = useForm(handleCheckbox);
-
-  async function handleCheckbox() {
-    try {
-      const {data} = await axios.put('/api/todo', todoValues)
-      console.log(data);
-      setTodos(data);
-    } catch(err) {
-      console.error(err);
-    }
-  }
-
+  
   return (
     todo.list === currList.value && (
       <form>
@@ -30,11 +13,13 @@ function Todo({todo, currList, setTodos, deleteTodo}) {
             <input
               name="completed"
               type="checkbox"
-              onChange={(e) => {
-                todoHandleChange(e);
-                todoHandleSubmit(e);
-              }}
-              value={todoValues.completed || "off"}
+              onChange={handleCheckbox}
+              value={true}
+              checked={todo.completed}
+              data-todo_id={todo._id}
+              data-todo_todo={todo.todo}
+              data-todo_list={todo.list}
+              data-todo_completed={todo.completed}
             />
             <p>{todo.todo}</p>
           </div>
