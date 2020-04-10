@@ -4,7 +4,7 @@ import { FaRegTrashAlt } from 'react-icons/fa';
 
 function Todo({todo, currList, deleteTodo, handleCheckbox}) {
   const [hover, ref] = useHover();
-  
+
   return (
     todo.list === currList.value && (
       <form>
@@ -14,12 +14,12 @@ function Todo({todo, currList, deleteTodo, handleCheckbox}) {
               name="completed"
               type="checkbox"
               onChange={handleCheckbox}
-              value={true}
+              value={todo._id}
               checked={todo.completed}
-              data-todo_id={todo._id}
-              data-todo_todo={todo.todo}
-              data-todo_list={todo.list}
-              data-todo_completed={todo.completed}
+              // data-todo_id={todo._id}
+              // data-todo_todo={todo.todo}
+              // data-todo_list={todo.list}
+              // data-todo_completed={todo.completed}
             />
             <p>{todo.todo}</p>
           </div>

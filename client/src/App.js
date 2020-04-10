@@ -68,7 +68,6 @@ function App() {
         completed: false
       }
       const {data} = await axios.post('/api/todo', allValues)
-      console.log(data);
       setTodos(data);
       reset();
     } catch(err) {
@@ -79,7 +78,6 @@ function App() {
   async function deleteTodo(todo) {
     try {
       const {data} = await axios.post('/api/deleteTodo', todo)
-      console.log(data);
       setTodos(data);
     } catch(err) {
       console.error(err);
@@ -93,12 +91,11 @@ function App() {
 
   async function handleCheckbox(event) {
     try {
-      const { todo_id, todo_todo, todo_list, todo_completed } = event.target.dataset;
+      const _id = event.target.value;
+      const completed = !todos.find(todo => todo._id + "" === _id).completed;
       const allValues = {
-        _id: todo_id,
-        todo: todo_todo,
-        list: todo_list,
-        completed: todo_completed === 'true' ? false : true
+        _id,
+        completed
       }
       const {data} = await axios.put('/api/todo', allValues)
       setTodos(data);
