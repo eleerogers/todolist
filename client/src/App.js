@@ -1,14 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useHistory } from 'react-router-dom';
 import axios from 'axios';
-// import 'bulma/css/bulma.css';
 import './App.css';
 import Modal from "./components/modal";
 import useForm from "./hooks/useForm";
-// import useDropdown from "./hooks/useDropdown";
 import useModal from "./hooks/useModal";
-// import Select from "react-select";
-// import { FontAwesomeIcon } from 'react-fontawesome'
-// import { faCoffee } from 'free-solid-svg-icons'
 import Todo from './components/todo';
 import MySelect from './components/MySelect';
 
@@ -21,18 +17,25 @@ function App() {
     reset
   } = useForm(addTodo);
   const [todos, setTodos] = useState([]);
-  const listOptions = ["Home", "Work"];
-  const [listNames, setListNames] = useState(listOptions);
+  const { list } = useParams();
+  console.log({list});
+  // const listOptions = ["Home", "Work"];
+  const [listNames, setListNames] = useState([list]);
   const {isShowing, toggle} = useModal();
-  const [currList, setCurrList] = useState("Home");
-  // const [list, ListDropdown] = useDropdown("Lists", listNames, currList, setCurrList)
+  // const [currList, setCurrList] = useState("Home");
   const inputRef = useRef(null);
-  console.log('listNames: ', listNames[0])
+  const history = useHistory();
 
   const options = listNames.map((d, i) => ({
     value: d,
     label: d
   }));
+
+  useEffect(() => {
+    if (!list) {
+      history.push("/Home");
+    }
+  })
   
   useEffect(() => {
     async function getDay() {
@@ -61,7 +64,10 @@ function App() {
   useEffect(() => {
     const additionalLists = [];
     todos.forEach(item => {
-      if (listNames.indexOf(item.list) === -1) {
+      if (
+        listNames.indexOf(item.list) === -1 && 
+        additionalLists.indexOf(item.list) === -1
+      ) {
         additionalLists.push(item.list);
       }
     })
@@ -95,7 +101,7 @@ function App() {
   }
 
   function handleListChange(selectedOption) {
-    setCurrList(selectedOption);
+    history.push(`/${selectedOption}`);
     inputRef.current.focus();
   }
 
@@ -117,7 +123,7 @@ function App() {
   return (
     <div className="App">
       <div className="box" id="heading">
-        <h1>{currList}</h1>
+        <h1>{list}</h1>
         <h1>{day}</h1>
       </div>
       <div className="box">
@@ -125,13 +131,13 @@ function App() {
           return <Todo 
             key={`${todo.todo}+${i}`} 
             todo={todo} 
-            currList={currList} 
+            currList={list} 
             setTodos={setTodos}
             deleteTodo={deleteTodo}
             handleCheckbox={handleCheckbox}
           />
         })}
-        <form className="item" onSubmit={newTodoHandleSubmit} data-list={currList}>
+        <form className="item" onSubmit={newTodoHandleSubmit} data-list={list}>
           <input
             type="text"
             placeholder='Add new "to do"'
@@ -139,7 +145,7 @@ function App() {
             value={newTodoValues.todo || ""}
             onChange={newTodoHandleChange}
             autoComplete="off"
-            data-list={currList}
+            data-list={list}
             ref={inputRef}
           />
           <button type="submit">
@@ -151,19 +157,11 @@ function App() {
         <div className="list-select-box">
           <p>List Selector:</p>
           <MySelect 
-            value={currList} 
+            value={list} 
             options={options} 
             onChange={handleListChange} 
-            // isSearchable={false}
             placeholder="Choose list..."
           />
-          {/* <MySelect
-            value={fruit}
-            options={options}
-            onChange={setFruit}
-            placeholder="Select one..."
-          /> */}
-          {/* <ListDropdown /> */}
           <br />
           <button className="newListBtn" onClick={toggle}>Create new list</button>
         </div>
@@ -172,7 +170,7 @@ function App() {
         isShowing={isShowing}
         hide={toggle}
         setListNames={setListNames}
-        setCurrList={setCurrList}
+        setCurrList={handleListChange}
         inputRef={inputRef}
       />
     </div>
@@ -180,28 +178,3 @@ function App() {
 }
 
 export default App;
-
-
-// using useCallback - add useCallback to imports
-  // const dayColor = useCallback(() => {
-  //   if (day === "Saturday" || day === "Sunday") {
-  //     setH1Class("weekend");
-  //   } else {
-  //     setH1Class("weekday");
-  //   }
-  // }, [day])
-  
-  // const getDay = useCallback(async () => {
-  //   try {
-  //     const response = await axios('/api/day');
-  //     const {data} = response;
-  //     setDay(data);
-  //     dayColor();
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // }, [dayColor])
-
-  // useEffect(() => {
-  //   getDay();
-  // }, [getDay])
