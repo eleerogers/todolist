@@ -6,7 +6,7 @@ function Todo({todo, currList, deleteTodo, handleCheckbox}) {
   const [hover, ref] = useHover();
 
   return (
-    todo.list === currList.value && (
+    todo.list === currList && (
       <form>
         <div className="item-div">
           <div className="item">

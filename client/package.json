@@ -5,13 +5,17 @@
   "proxy": "http://localhost:5000",
   "dependencies": {
     "axios": "^0.19.2",
-    "bulma": "^0.8.1",
+    "bulma": "^0.8.2",
     "kind-of": "^6.0.3",
+    "match-sorter": "^4.1.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-icons": "^3.9.0",
     "react-scripts": "3.4.1",
-    "react-select": "^3.1.0"
+    "react-select": "^3.1.0",
+    "react-window": "^1.8.5",
+    "styled-components": "^5.1.0",
+    "use-select": "0.0.4"
   },
   "scripts": {
     "start": "react-scripts start",

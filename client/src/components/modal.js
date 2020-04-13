@@ -6,7 +6,7 @@ function Modal({ isShowing, hide, setListNames, setCurrList, inputRef }) {
   const { values, handleChange, handleSubmit } = useForm(addList);
 
   function addList() {
-    const newList = {value: values.newList, label: values.newList};
+    const newList = values.newList;
     setListNames(currNames => [...currNames, newList]);
     setCurrList(newList);
     hide();
