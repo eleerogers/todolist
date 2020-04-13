@@ -3,7 +3,8 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
+const { Pool } = require('pg');
+
 const generatePassword = require('password-generator');
 const { getDate, getDay } = require('./getDate');
 
@@ -12,15 +13,12 @@ app.use(bodyParser.json());
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'client/build')));
 
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+const connectionString = process.env.SQL_CONNECTION_STRING;
 
-const todoSchema = new mongoose.Schema({
-  todo: String,
-  completed: Boolean,
-  list: String
-}) 
+const pool = new Pool({
+  connectionString
+});
 
-const Todo = mongoose.model("Todo", todoSchema);
 
 app.get('/api/day', (req, res) => {
   const currentDay = getDate();
@@ -29,44 +27,51 @@ app.get('/api/day', (req, res) => {
 
 app.post('/api/todo', (req, res) => {
   const {todo, list, completed} = req.body;
-  const newTodo = new Todo({ todo, list, completed })
-  newTodo.save((err, todo) => {
-    if (err) {
-      console.error(err);
-    } else {
-      console.log(`succesfully added ${todo.todo}`);
+  pool.query('INSERT INTO todos (todo, list, completed) VALUES ($1, $2, $3) RETURNING *', [todo, list, completed], (error, results) => {
+    if (error) {
+      console.error(error);
+      throw error;
     }
     res.redirect('/api/todo');
   })
+  
 })
 
 app.put('/api/todo', (req, res) => {
   const { _id, completed } = req.body;
-  Todo.updateOne({ _id }, { completed }, (err) => {
-    if (err) {
-      console.error(err);
-    } else {
-      console.log('updated completed')
+  pool.query(
+    'UPDATE todos SET completed = $1 WHERE _id = $2',
+    [completed, _id],
+    (error, results) => {
+      if (error) {
+        console.error(error);
+        throw error;
+      }
+      res.redirect(303, '/api/todo');
     }
-    res.redirect(303, '/api/todo');
-  })
+  );
 })
 
 app.post('/api/deleteTodo', (req, res) => {
-  const { _id } = req.body;
-  Todo.findByIdAndDelete( _id, (err) => {
-    if (err) {
-      console.error(err);
-    } else {
-      console.log("successfully deleted item")
+  const _id = parseInt(req.body._id, 10);
+  pool.query('DELETE FROM todos WHERE _id = $1', [_id], (error) => {
+    if (error) {
+      console.error(error);
+      throw error;
     }
-    res.redirect('/api/todo')
-  })
+    res.redirect('/api/todo');
+  });
+  
 })
 
 app.get('/api/todo', (req, res) => {
-  Todo.find({}, (err, results) => {
-    res.send(results)
+  pool.query('SELECT * FROM todos', (error, results) => {
+    if (error) {
+      console.error(error);
+      response.status(404).send();
+      return;
+    }
+    res.status(200).json(results.rows);
   })
 })
 

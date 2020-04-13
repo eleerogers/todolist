@@ -20,7 +20,7 @@ function App() {
   const { list } = useParams();
   console.log({list});
   // const listOptions = ["Home", "Work"];
-  const [listNames, setListNames] = useState([list]);
+  const [listNames, setListNames] = useState([]);
   const {isShowing, toggle} = useModal();
   // const [currList, setCurrList] = useState("Home");
   const inputRef = useRef(null);
