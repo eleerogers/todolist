@@ -6,10 +6,11 @@ import Modal from "./components/modal";
 import useForm from "./hooks/useForm";
 // import useDropdown from "./hooks/useDropdown";
 import useModal from "./hooks/useModal";
-import Select from "react-select";
+// import Select from "react-select";
 // import { FontAwesomeIcon } from 'react-fontawesome'
 // import { faCoffee } from 'free-solid-svg-icons'
 import Todo from './components/todo';
+import MySelect from './components/MySelect';
 
 function App() {
   const [day, setDay] = useState("");
@@ -20,12 +21,18 @@ function App() {
     reset
   } = useForm(addTodo);
   const [todos, setTodos] = useState([]);
-  const listOptions = [{value: "Home", label: "Home"}, {value: "Work", label: "Work"}]
+  const listOptions = ["Home", "Work"];
   const [listNames, setListNames] = useState(listOptions);
   const {isShowing, toggle} = useModal();
-  const [currList, setCurrList] = useState({value: "Home", label: "Home"});
+  const [currList, setCurrList] = useState("Home");
   // const [list, ListDropdown] = useDropdown("Lists", listNames, currList, setCurrList)
   const inputRef = useRef(null);
+  console.log('listNames: ', listNames[0])
+
+  const options = listNames.map((d, i) => ({
+    value: d,
+    label: d
+  }));
   
   useEffect(() => {
     async function getDay() {
@@ -44,21 +51,24 @@ function App() {
       try {
         const {data} = await axios('/api/todo');
         setTodos(data);
-        addListNames(data);
       } catch (err) {
         console.error(err);
       }
     }
-    function addListNames(data) {
-      const listNameVals = listNames.map(list => list.value)
-      data.forEach(item => {
-        if (listNameVals.indexOf(item.list) === -1) {
-          setListNames([...listNames, {value: item.list, label: item.list}]);
-        }
-      })
-    }
     getItems();
-  }, [listNames]);
+  }, []);
+
+  useEffect(() => {
+    const additionalLists = [];
+    todos.forEach(item => {
+      if (listNames.indexOf(item.list) === -1) {
+        additionalLists.push(item.list);
+      }
+    })
+    if (additionalLists.length > 0) {
+      setListNames(lists => [...lists, ...additionalLists]);
+    }
+  }, [todos, listNames]);
 
   async function addTodo(event) {
     try {
@@ -68,7 +78,6 @@ function App() {
         completed: false
       }
       const {data} = await axios.post('/api/todo', allValues)
-      console.log(data);
       setTodos(data);
       reset();
     } catch(err) {
@@ -79,7 +88,6 @@ function App() {
   async function deleteTodo(todo) {
     try {
       const {data} = await axios.post('/api/deleteTodo', todo)
-      console.log(data);
       setTodos(data);
     } catch(err) {
       console.error(err);
@@ -93,12 +101,11 @@ function App() {
 
   async function handleCheckbox(event) {
     try {
-      const { todo_id, todo_todo, todo_list, todo_completed } = event.target.dataset;
+      const _id = event.target.value;
+      const completed = !todos.find(todo => todo._id + "" === _id).completed;
       const allValues = {
-        _id: todo_id,
-        todo: todo_todo,
-        list: todo_list,
-        completed: todo_completed === 'true' ? false : true
+        _id,
+        completed
       }
       const {data} = await axios.put('/api/todo', allValues)
       setTodos(data);
@@ -110,7 +117,7 @@ function App() {
   return (
     <div className="App">
       <div className="box" id="heading">
-        <h1>{currList.value}</h1>
+        <h1>{currList}</h1>
         <h1>{day}</h1>
       </div>
       <div className="box">
@@ -124,7 +131,7 @@ function App() {
             handleCheckbox={handleCheckbox}
           />
         })}
-        <form className="item" onSubmit={newTodoHandleSubmit} data-list={currList.value}>
+        <form className="item" onSubmit={newTodoHandleSubmit} data-list={currList}>
           <input
             type="text"
             placeholder='Add new "to do"'
@@ -132,7 +139,7 @@ function App() {
             value={newTodoValues.todo || ""}
             onChange={newTodoHandleChange}
             autoComplete="off"
-            data-list={currList.value}
+            data-list={currList}
             ref={inputRef}
           />
           <button type="submit">
@@ -141,14 +148,25 @@ function App() {
         </form>
       </div>
       <div className="box">
-        <Select 
-          value={currList} 
-          options={listNames} 
-          onChange={handleListChange} 
-          isSearchable={false}
-        />
-        {/* <ListDropdown /> */}
-        <button onClick={toggle}>Add list</button>
+        <div className="list-select-box">
+          <p>List Selector:</p>
+          <MySelect 
+            value={currList} 
+            options={options} 
+            onChange={handleListChange} 
+            // isSearchable={false}
+            placeholder="Choose list..."
+          />
+          {/* <MySelect
+            value={fruit}
+            options={options}
+            onChange={setFruit}
+            placeholder="Select one..."
+          /> */}
+          {/* <ListDropdown /> */}
+          <br />
+          <button className="newListBtn" onClick={toggle}>Create new list</button>
+        </div>
       </div>
       <Modal
         isShowing={isShowing}
