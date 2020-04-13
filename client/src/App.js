@@ -113,6 +113,13 @@ function App() {
         _id,
         completed
       }
+      setTodos(data => data.map(todo => {
+        if (Number(_id) === todo._id) {
+          return {...todo, completed};
+        } else {
+          return todo;
+        }
+      }))
       const {data} = await axios.put('/api/todo', allValues)
       setTodos(data);
     } catch(err) {
